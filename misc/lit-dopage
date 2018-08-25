@@ -1,0 +1,30 @@
+#!/bin/bash
+# /etc/init.d/lit-dopage
+
+### BEGIN INIT INFO
+# Provides:          lit-dopage
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts lit-dopage app
+# Description:       This service is used to start lit-dopage app
+### END INIT INFO
+
+
+case "$1" in
+	start)
+		echo "Starting lit-dopage"
+		/home/pi/lit-dopage/bin/lit-dopage
+		;;
+	stop)
+		echo "Stopping lit-dopage"
+		killall lit-dopage
+		;;
+	*)
+		echo "Usage: /etc/init.d/lit-dopage start|stop"
+		exit 1
+		;;
+esac
+
+exit 0
