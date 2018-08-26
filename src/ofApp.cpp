@@ -28,12 +28,11 @@ void ofApp::setup() {
 	p9.load(mediaPath + "p9.png");
 	p0.load(mediaPath + "p0.png");
 	idle.load(mediaPath + "idle.png");
+	// video loading
 	#ifdef TARGET_OPENGLES
 	player.omxPlayer.disableLooping();
-	player.load(mediaPath + "scan.mp4");
-	#else
-	player.load(mediaPath + "scan.mp4");
 	#endif
+	player.load(mediaPath + "scan.mp4");
 }
 
 //--------------------------------------------------------------
@@ -55,13 +54,19 @@ void ofApp::update() {
 		}
 		if (state == "sc") {
 			if (prevState != "sc") {
+				#ifdef TARGET_OPENGLES
+				player.omxPlayer.restartMovie();
+				#else
 				player.stop();
-				player.play();
+				#endif
 				player.setPaused(false);
 			}
+			#ifndef TARGET_OPENGLES
 			player.update();
+			#endif
 		} else {
 			player.stop();
+			player.setPaused(true);
 		}
 	}
 	// wait for the connection with arduino to be up

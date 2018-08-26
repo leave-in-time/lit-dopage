@@ -80,12 +80,12 @@ void analyse() {
 }
 
 void unlock() {
-	digitalWrite(RELAY_2, HIGH);
+	digitalWrite(RELAY_1, HIGH);
 	digitalWrite(RELAY_2, HIGH);
 }
 
 void lock() {
-	digitalWrite(RELAY_2, LOW);
+	digitalWrite(RELAY_1, LOW);
 	digitalWrite(RELAY_2, LOW);
 }
 
