@@ -23,7 +23,7 @@ void setup(void) {
 	nfc.begin();
 	//relais
 	pinMode(RELAY_1, OUTPUT);
-	digitalWrite(RELAY_1, LOW);
+	digitalWrite(RELAY_1, HIGH);
 	pinMode(RELAY_2, OUTPUT);
 	digitalWrite(RELAY_2, LOW);
 }
@@ -80,12 +80,12 @@ void analyse() {
 }
 
 void unlock() {
-	digitalWrite(RELAY_1, HIGH);
+	digitalWrite(RELAY_1, LOW);
 	digitalWrite(RELAY_2, HIGH);
 }
 
 void lock() {
-	digitalWrite(RELAY_1, LOW);
+	digitalWrite(RELAY_1, HIGH);
 	digitalWrite(RELAY_2, LOW);
 }
 
