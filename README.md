@@ -53,3 +53,13 @@ sudo update-rc.d lit-dopage defaults
 ```
 
 This will make the app run at startup
+
+## Configure `config.txt` for 800x480 screen
+
+```
+# MODIF POUR ECRAN TACTILE 800x480
+hdmi_group=2
+hdmi_mode=87
+hdmi_cvt 800 480 60 6 0 0 0
+max_usb_current=1
+```

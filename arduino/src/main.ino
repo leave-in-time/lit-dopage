@@ -1,71 +1,71 @@
-#include <Wire.h>
-#include <PN532_I2C.h>
-#include <PN532.h>
-#include <NfcAdapter.h>
+#include <SPI.h>
+#include <Reader.h>
 #include <Button.h>
 
-// reader
-PN532_I2C pn532_i2c(Wire);
-NfcAdapter nfc = NfcAdapter(pn532_i2c);
-// button
-Button button = Button(4, INPUT_PULLUP);
-// relais
-#define RELAY_1 5
-#define RELAY_2 6
-
-String okCode = "p1";
+// flags
+String okCode = "00";
 String state = "id";
 bool started = false;
 
-void setup(void) {
+// nfc reader
+#define RST_PIN 10
+#define SS1_PIN 9
+MFRC522 nfc(SS1_PIN, RST_PIN);
+Reader reader(nfc, RST_PIN, okCode);
+
+// relais
+#define RELAY_PIN 5
+
+// buttons
+Button scanBtn = Button(7, INPUT_PULLUP);
+Button reportBtn = Button(6, INPUT_PULLUP);
+
+
+void setup() {
 	Serial.begin(115200);
 	// reader
-	nfc.begin();
-	//relais
-	pinMode(RELAY_1, OUTPUT);
-	digitalWrite(RELAY_1, HIGH);
-	pinMode(RELAY_2, OUTPUT);
-	digitalWrite(RELAY_2, LOW);
+	SPI.begin();
+	reader.init();
+	// reader starts in low power mode
+	pinMode(RST_PIN, OUTPUT);
+	digitalWrite(RST_PIN, LOW);
+	// relais
+	pinMode(RELAY_PIN, OUTPUT);
+	digitalWrite(RELAY_PIN, LOW);
 }
 
-void loop(void) {
+void loop() {
 	if (Serial.available() > 0) {
-		char initCmd = Serial.read();
-		if (initCmd == '#') {
-			state = "id";
-			Serial.print(state);
+		char cmd = Serial.read();
+		// init
+		if (cmd == '#') {
 			lock();
 			started = true;
 		}
+		else if (cmd == '$') {
+			unlock();
+		}
 	}
 	if (started) {
-		check();
-		if (button.uniquePress()) {
+		if (state != "re") check();
+		if (scanBtn.uniquePress()) {
 			delay(100);
-			analyse();
+			if (state == "re") idle();
+			else analyse();
+		}
+		if (reportBtn.uniquePress()) { //  && state != "sc" ?
+			delay(100);
+			state = "re";
+			Serial.print(state);
 		}
 		// delay(100);
 	}
 }
 
 void check() {
-	if (nfc.tagPresent()) {
-		NfcTag tag = nfc.read();
-		if (tag.hasNdefMessage()) {
-			NdefMessage message = tag.getNdefMessage();
-			if (message.getRecordCount() == 1) {
-				NdefRecord record = message.getRecord(0);
-				int payloadLength = record.getPayloadLength();
-				byte payload[payloadLength];
-				record.getPayload(payload);
-				String payloadAsString = "";
-				for (int c = 3; c < payloadLength; c++) {
-					payloadAsString += (char)payload[c];
-				}
-				state = payloadAsString;
-			} else idle();
-		} else idle();
-	} else idle();
+	String result = reader.getPayload();
+	if (result == "nok") idle();
+	else state = result;
 }
 
 void analyse() {
@@ -74,19 +74,17 @@ void analyse() {
 		delay(1950);
 		check();
 		Serial.print(state);
-		if (state == okCode) unlock();
-		else lock();
+		// if (state == okCode) unlock();
+		// else lock();
 	}
 }
 
 void unlock() {
-	digitalWrite(RELAY_1, LOW);
-	digitalWrite(RELAY_2, HIGH);
+	digitalWrite(RELAY_PIN, HIGH);
 }
 
 void lock() {
-	digitalWrite(RELAY_1, HIGH);
-	digitalWrite(RELAY_2, LOW);
+	digitalWrite(RELAY_PIN, LOW);
 }
 
 void idle() {
