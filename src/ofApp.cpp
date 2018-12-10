@@ -128,7 +128,7 @@ void ofApp::updateSerial() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	if (step != "win" && step != "password") updateSerial();
+	if (step != "win" || step != "password") updateSerial();
 	if (step == "password") uPassword();
 	else if (step == "passwordFail") uPasswordFail();
 	else if (step == "scan") uScan();
