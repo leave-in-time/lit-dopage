@@ -164,9 +164,9 @@ void ofApp::uScan() {
 		player.update();
 		#endif
 	}
-	else if (state == "re") {
-		step = "report";
-	}
+	// else if (state == "re") {
+	// 	step = "report";
+	// }
 	else {
 		player.stop();
 		player.setPaused(true);
