@@ -2,6 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+	ofSetEscapeQuitsApp(false);
 	ofHideCursor();
 	// arduino stuff
 	#ifdef TARGET_OPENGLES
@@ -59,8 +60,8 @@ void ofApp::setup() {
 	p39.load(mediaPath + "39.png");
 	idle.load(mediaPath + "idle.png");
 	password.load(mediaPath + "password.png");
-	report1.load(mediaPath + "report1.png");
-	report2.load(mediaPath + "report2.png");
+	passwordFail.load(mediaPath + "password-fail.png");
+	report.load(mediaPath + "report.png");
 	fail.load(mediaPath + "fail.png");
 	win.load(mediaPath + "win.png");
 	// video loading
@@ -79,6 +80,19 @@ void ofApp::setup() {
 	step = "password";
 	// font
 	font.load("Lato-Bold.ttf", 32);
+
+	// prevent SIGINT, SIGTERM and SIGKILL
+	#ifdef TARGET_OPENGLES
+	signal(SIGINT, &ofApp::sighandler);
+	signal(SIGTERM, &ofApp::sighandler);
+	signal(SIGKILL, &ofApp::sighandler);
+	#endif
+}
+
+//--------------------------------------------------------------
+void ofApp::sighandler(int signal) {
+	// noop
+	ofLog(OF_LOG_NOTICE, "SIGNAL!!");
 }
 
 //--------------------------------------------------------------
@@ -101,7 +115,7 @@ void ofApp::updateSerial() {
 			current == "id" || current == "sc" || current == "re"
 		) {
 			state = current;
-			if (state == "re") step = "report1";
+			if (state == "re") step = "report";
 			else step = "scan";
 		}
 	}
@@ -111,9 +125,9 @@ void ofApp::updateSerial() {
 void ofApp::update() {
 	updateSerial();
 	if (step == "password") uPassword();
+	else if (step == "passwordFail") uPasswordFail();
 	else if (step == "scan") uScan();
-	else if (step == "report1") uReport1();
-	else if (step == "report2") uReport2();
+	else if (step == "report") uReport();
 	else if (step == "win") uWin();
 	else if (step == "fail") uFail();
 	// wait for the connection with arduino to be up
@@ -127,6 +141,12 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::uPassword() {
 	// ofLogNotice(__func__, "update password");
+}
+
+//--------------------------------------------------------------
+void ofApp::uPasswordFail() {
+	// ofLogNotice(__func__, "update password fail");
+	if (ofGetElapsedTimef() - timestamp > 3.0) step = "password";
 }
 
 //--------------------------------------------------------------
@@ -145,7 +165,7 @@ void ofApp::uScan() {
 		#endif
 	}
 	else if (state == "re") {
-		step = "report1";
+		step = "report";
 	}
 	else {
 		player.stop();
@@ -154,13 +174,8 @@ void ofApp::uScan() {
 }
 
 //--------------------------------------------------------------
-void ofApp::uReport1() {
-	// ofLogNotice(__func__, "update report 1");
-}
-
-//--------------------------------------------------------------
-void ofApp::uReport2() {
-	// ofLogNotice(__func__, "update report 2");
+void ofApp::uReport() {
+	// ofLogNotice(__func__, "update report");
 }
 
 //--------------------------------------------------------------
@@ -185,11 +200,23 @@ void ofApp::uFail() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 	if (step == "password") dPassword();
+	else if (step == "passwordFail") dPasswordFail();
 	else if (step == "scan") dScan();
-	else if (step == "report1") dReport1();
-	else if (step == "report2") dReport2();
+	else if (step == "report") dReport();
 	else if (step == "win") dWin();
 	else if (step == "fail") dFail();
+}
+
+//--------------------------------------------------------------
+void ofApp::drawText(string text, int x, int y, bool cursor){
+	ofSetColor(0, 0, 0);
+	font.drawString(text, x, y);
+	ofRectangle rect = font.getStringBoundingBox(text, x, y);
+	if (cursor) {
+		if (rect.width > 0) drawCursor(rect.x + rect.width + 5, y - 32);
+		else drawCursor(x, y - 32);
+	}
+	ofSetColor(255, 255, 255);
 }
 
 //--------------------------------------------------------------
@@ -205,11 +232,12 @@ void ofApp::drawCursor(int x, int y){
 //--------------------------------------------------------------
 void ofApp::dPassword() {
 	password.draw(0,0);
-	ofSetColor(0, 0, 0);
-	font.drawString(passwordBuffer, 100, 100);
-	ofRectangle rect = font.getStringBoundingBox(passwordBuffer, 100, 100);
-	drawCursor(rect.x + rect.width + 5, 100 - 32);
-	ofSetColor(255, 255, 255);
+	drawText(passwordBuffer, 225, 402, true);
+}
+
+//--------------------------------------------------------------
+void ofApp::dPasswordFail() {
+	passwordFail.draw(0,0);
 }
 
 //--------------------------------------------------------------
@@ -259,22 +287,16 @@ void ofApp::dScan() {
 }
 
 //--------------------------------------------------------------
-void ofApp::dReport1() {
-	report1.draw(0,0);
-	ofSetColor(0, 0, 0);
-	font.drawString(passwordBuffer, 100, 100);
-	ofRectangle rect = font.getStringBoundingBox(passwordBuffer, 100, 100);
-	drawCursor(rect.x + rect.width + 5, 100 - 32);
-	ofSetColor(255, 255, 255);}
-
-//--------------------------------------------------------------
-void ofApp::dReport2() {
-	report2.draw(0,0);
-	ofSetColor(0, 0, 0);
-	font.drawString(passwordBuffer, 100, 100);
-	ofRectangle rect = font.getStringBoundingBox(passwordBuffer, 100, 100);
-	drawCursor(rect.x + rect.width + 5, 100 - 32);
-	ofSetColor(255, 255, 255);}
+void ofApp::dReport() {
+	report.draw(0,0);
+	if (firstReport == "") {
+		drawText(passwordBuffer, 239, 309, true);
+	}
+	else {
+		drawText(firstReport, 239, 309, false);
+		drawText(passwordBuffer, 316, 382, true);
+	}
+}
 
 //--------------------------------------------------------------
 void ofApp::dWin() {
@@ -288,30 +310,162 @@ void ofApp::dFail() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key) {
-	if (step == "password" || step == "report1" || step == "report2") {
+	if (step == "password" || step == "report") {
 		// if we didn't hit return, add the key to our string
 		if (key != OF_KEY_RETURN) {
 			if (key == OF_KEY_BACKSPACE && passwordBuffer.size() > 0) passwordBuffer.erase(passwordBuffer.end() - 1);
+			#ifdef TARGET_OPENGLES
+			else if (!isSpecialChar(key)) passwordBuffer += getLocaleKey(key);
+			#else
 			else passwordBuffer += key;
+			#endif
 		}
 		// hit Return, check password
 		else {
-			if (toLower(passwordBuffer) == password1 && step == "password") {
-				step = "scan";
-				state = "id";
+			if (step == "password") {
+				if (toLower(passwordBuffer) == password1) {
+					step = "scan";
+					state = "id";
+				}
+				else {
+					timestamp = ofGetElapsedTimef();
+					step = "passwordFail";
+				}
 			}
-			else if (step == "report1") {
-				if (toLower(passwordBuffer) == password2) firstReport = true;
-				else firstReport = false;
-				step = "report2";
+			else if (step == "report") {
+				if (firstReport == "") firstReport = toLower(passwordBuffer);
+				else {
+					timestamp = ofGetElapsedTimef();
+					if (firstReport == password2 && toLower(passwordBuffer) == password3) step = "win";
+					else step = "fail";
+					firstReport = "";
+				}
 			}
-			else if (step == "report2") {
-				timestamp = ofGetElapsedTimef();
-				if (toLower(passwordBuffer) == password3 && firstReport) step = "win";
-				else step = "fail";
-			}
-			ofLogNotice(__func__, passwordBuffer);
+			// ofLogNotice(__func__, passwordBuffer);
 			passwordBuffer = "";
 		}
+	}
+}
+
+//--------------------------------------------------------------
+bool ofApp::isSpecialChar(int key) {
+	switch (key) {
+		case OF_KEY_ESC:
+		case OF_KEY_TAB:
+		case OF_KEY_DEL:
+		case OF_KEY_BACKSPACE:
+		case OF_KEY_F1:
+		case OF_KEY_F2:
+		case OF_KEY_F3:
+		case OF_KEY_F4:
+		case OF_KEY_F5:
+		case OF_KEY_F6:
+		case OF_KEY_F7:
+		case OF_KEY_F8:
+		case OF_KEY_F9:
+		case OF_KEY_F10:
+		case OF_KEY_F11:
+		case OF_KEY_F12:
+		case OF_KEY_LEFT:
+		case OF_KEY_UP:
+		case OF_KEY_RIGHT:
+		case OF_KEY_DOWN:
+		case OF_KEY_PAGE_UP:
+		case OF_KEY_PAGE_DOWN:
+		case OF_KEY_HOME:
+		case OF_KEY_END:
+		case OF_KEY_INSERT:
+		case OF_KEY_CONTROL:
+		case OF_KEY_ALT:
+		case OF_KEY_SHIFT:
+		case OF_KEY_SUPER:
+		case OF_KEY_LEFT_SHIFT:
+		case OF_KEY_RIGHT_SHIFT:
+		case OF_KEY_LEFT_CONTROL:
+		case OF_KEY_RIGHT_CONTROL:
+		case OF_KEY_LEFT_ALT:
+		case OF_KEY_RIGHT_ALT:
+		case OF_KEY_LEFT_SUPER:
+		case OF_KEY_RIGHT_SUPER:
+			return true;
+			break;
+		// disable some bad keys
+		case 0:
+		#ifdef TARGET_OPENGLES
+		case 1:
+		#endif
+		case 42:
+		case 255:
+			return true;
+			break;
+		default:
+			return false;
+			break;
+	}
+}
+
+//--------------------------------------------------------------
+int ofApp::getLocaleKey(int key) {
+	switch (key) {
+		// 1 to 0 with shift
+		case 33: return '1'; break;
+		case 64: return '2'; break;
+		case 35: return '3'; break;
+		case 36: return '4'; break;
+		case 37: return '5'; break;
+		case 94: return '6'; break;
+		case 38: return '7'; break;
+		case 42: return '8'; break;
+		case 40: return '9'; break;
+		case 41: return '0'; break;
+		// 1 to 0 without shift
+		case 49: return '&'; break;
+		case 50: return 'e'; break;
+		case 51: return '"'; break;
+		case 52: return '\''; break;
+		case 53: return '('; break;
+		case 54: return '-'; break;
+		case 55: return 'e'; break;
+		case 56: return '_'; break;
+		case 57: return 'c'; break;
+		case 48: return 'a'; break;
+		// )/° key
+		case 45: return ')'; break;
+		#ifdef TARGET_OPENGLES
+		case 95: return '°'; break;
+		#endif
+		// next to "return" key
+		case 91: return '^'; break;
+		case 123: return '^'; break;
+		case 93: return '$'; break;
+		case 125: return '$'; break;
+		case 39: return 'u'; break;
+		case 34: return '%'; break;
+		case 92: return '*'; break;
+		case 59: return 'm'; break;
+		case 58: return 'M'; break;
+		case 109: return ','; break;
+		case 77: return '?'; break;
+		case 44: return ';'; break;
+		case 60: return '.'; break;
+		case 46: return ':'; break;
+		case 62: return '/'; break;
+		case 47: return '!'; break;
+		case 63: return '!'; break;
+		// qwerty --> azerty
+		case 113: return 'a'; break;
+		case 81: return 'A'; break;
+		case 119: return 'z'; break;
+		case 87: return 'Z'; break;
+		case 122: return 'w'; break;
+		case 90: return 'W'; break;
+		case 97: return 'q'; break;
+		case 65: return 'Q'; break;
+		// ² key
+		#ifdef TARGET_OPENGLES
+		case 10: return '²'; break;
+		#endif
+		// defaults
+		default: return key; break;
 	}
 }

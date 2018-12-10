@@ -4,6 +4,7 @@
 #ifdef TARGET_OPENGLES
 #include "ofRPIVideoPlayer.h"
 #endif
+#include <signal.h>
 #include <Poco/String.h>
 using Poco::trim;
 using Poco::toLower;
@@ -16,20 +17,24 @@ public:
 	void updateSerial();
 	void update();
 	void uPassword();
+	void uPasswordFail();
 	void uScan();
-	void uReport1();
-	void uReport2();
+	void uReport();
 	void uWin();
 	void uFail();
 	void draw();
+	void drawText(string text, int x, int y, bool cursor);
 	void drawCursor(int x, int y);
 	void dPassword();
+	void dPasswordFail();
 	void dScan();
-	void dReport1();
-	void dReport2();
+	void dReport();
 	void dWin();
 	void dFail();
 	void keyPressed(int key);
+	bool isSpecialChar(int key);
+	int getLocaleKey(int key);
+	static void sighandler(int signal);
 	// arduino stuff
 	ofSerial serial;
 	bool initOK;
@@ -82,8 +87,8 @@ public:
 	ofImage sc;
 	ofImage idle;
 	ofImage password;
-	ofImage report1;
-	ofImage report2;
+	ofImage passwordFail;
+	ofImage report;
 	ofImage fail;
 	ofImage win;
 	// media path
@@ -98,7 +103,7 @@ public:
 	string password2;
 	string password3;
 	string passwordBuffer;
-	bool firstReport; // is first report password is ok ?
+	string firstReport; // first "report answer"
 	// timestamps
 	float timestamp; // to reset on win/fail
 	int cursorElapsed;
