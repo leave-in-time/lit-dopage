@@ -83,7 +83,7 @@ void ofApp::setup() {
 
 	// sound
 	winSound.load(mediaPath + "win.wav");
-	winSound.setLoop(true);
+	// winSound.setLoop(true);
 	shouldPlay = true;
 
 	// prevent SIGINT, SIGTERM and SIGKILL
