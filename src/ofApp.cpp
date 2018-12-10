@@ -81,6 +81,11 @@ void ofApp::setup() {
 	// font
 	font.load("Lato-Bold.ttf", 32);
 
+	// sound
+	winSound.load(mediaPath + "win.wav");
+	winSound.setLoop(true);
+	shouldPlay = true;
+
 	// prevent SIGINT, SIGTERM and SIGKILL
 	#ifdef TARGET_OPENGLES
 	signal(SIGINT, &ofApp::sighandler);
@@ -182,7 +187,11 @@ void ofApp::uReport() {
 void ofApp::uWin() {
 	// ofLogNotice(__func__, "update win");
 	serial.writeByte('$');
+	if (shouldPlay) winSound.play();
+	shouldPlay = false;
 	if (ofGetElapsedTimef() - timestamp > 10.0) {
+		winSound.stop();
+		shouldPlay = true;
 		serial.writeByte('#');
 		step = "password";
 	}

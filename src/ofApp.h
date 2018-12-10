@@ -110,4 +110,7 @@ public:
 	bool shouldDrawCursor;
 	// font stuff
 	ofTrueTypeFont font;
+	// sound
+	ofSoundPlayer winSound;
+	bool shouldPlay;
 };
