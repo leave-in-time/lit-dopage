@@ -321,7 +321,7 @@ void ofApp::dFail() {
 void ofApp::keyPressed(int key) {
 	if (step == "password" || step == "report") {
 		// if we didn't hit return, add the key to our string
-		ofLogNotice(__func__, key);
+		ofLogNotice(__func__, (char)key);
 		if (key != OF_KEY_RETURN) {
 			if (key == OF_KEY_BACKSPACE && passwordBuffer.size() > 0) passwordBuffer.erase(passwordBuffer.end() - 1);
 			#ifdef TARGET_OPENGLES
