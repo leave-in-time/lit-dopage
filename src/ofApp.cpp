@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	// ofSetEscapeQuitsApp(false);
+	ofSetEscapeQuitsApp(false);
 	ofHideCursor();
 	// arduino stuff
 	#ifdef TARGET_OPENGLES
@@ -189,7 +189,7 @@ void ofApp::uWin() {
 	serial.writeByte('$');
 	if (shouldPlay) winSound.play();
 	shouldPlay = false;
-	if (ofGetElapsedTimef() - timestamp > 10.0) {
+	if (ofGetElapsedTimef() - timestamp > 120.0) {
 		winSound.stop();
 		shouldPlay = true;
 		serial.writeByte('#');
