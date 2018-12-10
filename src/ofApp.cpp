@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	ofSetEscapeQuitsApp(false);
+	// ofSetEscapeQuitsApp(false);
 	ofHideCursor();
 	// arduino stuff
 	#ifdef TARGET_OPENGLES
