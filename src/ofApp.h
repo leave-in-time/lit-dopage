@@ -8,6 +8,7 @@
 #include <Poco/String.h>
 using Poco::trim;
 using Poco::toLower;
+using namespace std;
 #define INTERVAL 750
 
 
