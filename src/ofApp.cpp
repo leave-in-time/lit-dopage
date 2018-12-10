@@ -391,9 +391,7 @@ bool ofApp::isSpecialChar(int key) {
 			break;
 		// disable some bad keys
 		case 0:
-		#ifdef TARGET_OPENGLES
-		case 1:
-		#endif
+		// case 1: // same as OF_KEY_SHIFT
 		case 42:
 		case 255:
 			return true;
