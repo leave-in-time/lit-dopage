@@ -241,7 +241,7 @@ void ofApp::drawCursor(int x, int y){
 //--------------------------------------------------------------
 void ofApp::dPassword() {
 	password.draw(0,0);
-	drawText(passwordBuffer, 225, 402, true);
+	drawText(passwordBuffer, 330, 402, true);
 }
 
 //--------------------------------------------------------------
@@ -325,7 +325,7 @@ void ofApp::keyPressed(int key) {
 		if (key != OF_KEY_RETURN) {
 			if (key == OF_KEY_BACKSPACE && passwordBuffer.size() > 0) passwordBuffer.erase(passwordBuffer.end() - 1);
 			#ifdef TARGET_OPENGLES
-			else if (!isSpecialChar(key)) passwordBuffer += getLocaleKey(key);
+			else if (!isSpecialChar(key)) passwordBuffer += key;
 			#else
 			else passwordBuffer += key;
 			#endif
@@ -402,7 +402,7 @@ bool ofApp::isSpecialChar(int key) {
 		// disable some bad keys
 		case 0:
 		// case 1: // same as OF_KEY_SHIFT
-		case 42:
+		// case 42:
 		case 255:
 			return true;
 			break;
