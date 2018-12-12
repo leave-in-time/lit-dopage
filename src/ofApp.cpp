@@ -128,7 +128,7 @@ void ofApp::updateSerial() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	if (step != "win" && step != "password") updateSerial();
+	if (step == "scan" || step == "report") updateSerial();
 	if (step == "password") uPassword();
 	else if (step == "passwordFail") uPasswordFail();
 	else if (step == "scan") uScan();
@@ -151,7 +151,7 @@ void ofApp::uPassword() {
 //--------------------------------------------------------------
 void ofApp::uPasswordFail() {
 	// ofLogNotice(__func__, "update password fail");
-	if (ofGetElapsedTimef() - timestamp > 3.0) step = "password";
+	if (ofGetElapsedTimef() - timestamp > 2.0) step = "password";
 }
 
 //--------------------------------------------------------------
@@ -189,7 +189,7 @@ void ofApp::uWin() {
 	serial.writeByte('$');
 	if (shouldPlay) winSound.play();
 	shouldPlay = false;
-	if (ofGetElapsedTimef() - timestamp > 120.0) {
+	if (ofGetElapsedTimef() - timestamp > 15.0) {
 		winSound.stop();
 		shouldPlay = true;
 		serial.writeByte('#');
