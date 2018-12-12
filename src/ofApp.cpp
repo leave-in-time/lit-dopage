@@ -129,6 +129,7 @@ void ofApp::updateSerial() {
 //--------------------------------------------------------------
 void ofApp::update() {
 	if (step == "scan" || step == "report") updateSerial();
+	else serial.flush(true, false);
 	if (step == "password") uPassword();
 	else if (step == "passwordFail") uPasswordFail();
 	else if (step == "scan") uScan();
